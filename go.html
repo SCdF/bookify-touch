@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Not yet loaded</title>
+  <link rel="stylesheet" type="text/css" href="./bookify-lib/bookify.css">
+</head>
+<body>
+  <div id="goback"></div>
+  <div id="goforward"></div>
+  <article id="content">
+  </article>
+
+  <style type="text/css">
+    #goback, #goforward {
+      position: fixed;
+      height: 100%;
+      top: 0;
+
+      opacity: 0;
+    }
+    #goback {
+      left: 0;
+      width: 25%;
+      background-color: blue;
+    }
+    #goforward {
+      right: 0;
+      width: 75%;
+      background-color: red;
+    }
+  </style>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js" ></script>
+  <script src="./bookify-lib/bookify.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      // http://nack.co/get-url-parameters-using-jquery/
+      $.urlParam = function(name){
+        var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        return results[1] || 0;
+      }
+
+      if (!bookify) {
+        throw "Bookify not loaded"
+      }
+
+      // Config bookify
+      bookify.settings.token = '3f5c9f6c9869dbb23897ffe7c06f79ea4c1f1963';
+
+      var pointer = {};
+      var article = {};
+      var surface = $('#content')
+
+      bookify.readability.getContent($.urlParam('article'), {
+        dataType: 'jsonp',
+        success: function(results) {
+          document.title = results.title;
+
+          var title = $("<h1>").html(results.title);
+          article = results.content.first().before(title).siblings();
+
+          pointer = bookify.controller.renderCurrentPage({pageHead: article.first()}, surface);
+          $('#goback').click(function() {
+            pointer = bookify.controller.renderPreviousPage(pointer, surface);
+          });
+          $('#goforward').click(function() {
+            pointer = bookify.controller.renderNextPage(pointer, surface);
+          })
+        },
+        error: function(error) {
+          console.log("Something went wrong, error below the line!")
+          console.log(textStatus, errorThrown);
+          surface.append("<p>"+textStatus+"</p><p>"+errorThrown+"</p>");
+        }});
+    });
+  </script>
+</body>
+</html>
